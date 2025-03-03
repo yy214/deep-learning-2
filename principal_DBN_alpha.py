@@ -1,23 +1,23 @@
-import principal_RBM_alpha.RBM as rbm
+from model import Model
+from rbm import RBM
 import numpy as np
 import matplotlib.pyplot as plt
 
 class DBN:
-
-    def init_DBN(self, sizes):
+    def __init__(self, sizes):
         self.sizes = sizes
         self.rbm_layers = []
         for i in range(len(sizes)-1):
-            self.rbm_layers.append(rbm.init_RBM(sizes[i], sizes[i+1]))
-
-    def train_DBN(self, data, num_iterations, learning_rate, batch_size):
+            self.rbm_layers.append(RBM(sizes[i], sizes[i+1]))
+            
+    def train(self, data, num_iterations, batch_size, learning_rate):
         input_data = data
         for rbm_layer in self.rbm_layers:
             rbm_layer.train_RBM(input_data, num_iterations, learning_rate, batch_size)
             input_data = rbm_layer.entree_sortie_RBM(input_data)
         return self
     
-    def generer_image_DBN(self, num_iterations, num_images):
+    def generer_image(self, num_images, num_iterations):
         generated_images = []
         for _ in range(num_images):
             sample = np.random.rand(1, self.sizes[0])

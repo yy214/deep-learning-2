@@ -1,9 +1,10 @@
 import numpy as np
+from model import Model
 
 def sigmoid(x):
     return 1/(1+np.exp(-x))
 
-class RBM:
+class RBM(Model):
     def __init__(self, p, q):
         self.a = np.zeros(p)
         self.b = np.zeros(q)
