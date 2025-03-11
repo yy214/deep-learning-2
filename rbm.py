@@ -40,6 +40,7 @@ class RBM(Model):
                 self.W += lr/real_batch_size * grad_W
     
     def generer_image(self, nb_data, nb_iter):
+        p = self.a.shape[0]
         for i in range(nb_data):
             X_new = int(np.random.rand(1, p) < 0.5)
             for j in range(nb_iter):
