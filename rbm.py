@@ -28,9 +28,9 @@ class RBM(Model):
                 real_batch_size = X_batch.shape[0]
                 v0 = X_batch # batch * p
                 phv0 = self.entree_sortie(v0) # batch * q
-                h0 = int(np.random.rand(real_batch_size, q) < phv0)
+                h0 = (np.random.rand(real_batch_size, q) < phv0).astype(int)
                 pvh0 = self.sortie_entree(h0) # batch * p
-                v1 = int(np.random.rand(real_batch_size, p) < pvh0)
+                v1 = (np.random.rand(real_batch_size, p) < pvh0).astype(int)
                 phv1 = self.entree_sortie(v1) # batch * q
                 grad_a = np.sum(v0-v1, axis=0)
                 grad_b = np.sum(phv0-phv1, axis=0)
@@ -42,8 +42,8 @@ class RBM(Model):
     def generer_image(self, nb_data, nb_iter):
         p = self.a.shape[0]
         for i in range(nb_data):
-            X_new = int(np.random.rand(1, p) < 0.5)
+            X_new = (np.random.rand(1, p) < 0.5).astype(int)
             for j in range(nb_iter):
                 H = self.entree_sortie(X_new)
-                X_new = int(np.random.rand(1, p) < self.sortie_entree(H))
+                X_new = (np.random.rand(1, p) < self.sortie_entree(H)).astype(int)
             yield X_new

@@ -23,7 +23,7 @@ class DBN(Model):
         return self
                 
     
-    def generer_image(self, num_images, num_iterations):
+    def generer_image(self, num_iterations, num_images):
         generated_images = []
         for _ in range(num_images):
             sample = np.random.rand(1, self.sizes[-1])
