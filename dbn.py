@@ -7,10 +7,9 @@ from model import Model
 
 class DBN(Model):
 
-    def __init__(self, p ,q):
-        self.img_size = p
-        p = np.prod(p)
-        self.sizes = [p] + q
+    def __init__(self, sizes):
+        self.sizes = sizes
+        
         
         self.rbm_layers = []
         for i in range(len(self.sizes)-1):
