@@ -17,5 +17,5 @@ def afficher_image(img, size=(20, 16)):
     :img: 1D array
     :size: tuple
     """
-    plt.imshow(img.reshape(*size))
+    plt.imshow(img.reshape(*size), cmap='binary')
     plt.show()
