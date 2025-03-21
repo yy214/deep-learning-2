@@ -1,19 +1,20 @@
 from rbm import RBM
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.io
 from model import Model
 
 
 
 class DBN(Model):
 
-    def __init__(self, img_size ,sizes):
-        self.sizes = sizes
-        self.img_size = img_size
+    def __init__(self, p ,q):
+        self.img_size = p
+        p = np.prod(p)
+        self.sizes = [p] + q
+        
         self.rbm_layers = []
-        for i in range(len(sizes)-1):
-            self.rbm_layers.append(RBM(sizes[i], sizes[i+1]))
+        for i in range(len(self.sizes)-1):
+            self.rbm_layers.append(RBM(self.sizes[i], self.sizes[i+1]))
 
     #def train_DBN(self, data, nb_epoch, learning_rate, batch_size):
     def train(self, X, nb_epoch, batch_size, lr):
@@ -46,19 +47,5 @@ class DBN(Model):
         #     plt.show()
         
     
-if __name__ == '__main__':
 
-    data = scipy.io.loadmat('data/binaryalphadigs.mat')
-    images = data['dat']
-    flattened_images = []
-    img_sizes = images[0][0].shape
-    for alpha in images:
-        for img in alpha:
-            flattened_images.append(img.flatten() / 255.0)
-
-    flattened_images = np.array(flattened_images)
-    dbn = DBN(img_sizes, [flattened_images.shape[1], 500, 250, 100])
-    dbn.train(flattened_images, nb_epoch=10, batch_size=256, lr=0.1)
-
-    dbn.generer_image(num_iterations=1000, num_images=10)
     
