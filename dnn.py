@@ -1,6 +1,7 @@
 from model import Model
 from rbm import RBM
 from dbn import DBN
+import numpy as np
 
 def calcul_softmax(rbm:RBM, entree):
     sortie = rbm.entree_sortie(entree)
@@ -37,10 +38,10 @@ class DNN():
             sorties.append(layer.entree_sortie(sorties[-1]))
         return sorties, calcul_softmax(self.net.rbm_layers[-1], sorties[-2])
     
-    def retropropagation(self, X, labels, nb_epoch, batch_size, lr, verbose=True):
+    def retropropagation(self, X, labels, nb_epoch, batch_size, lr, verbose_interval = 10):
         n = X.shape[0]
         layer_count = len(self.net.rbm_layers)  # note that the last layer is the prediction layer
-        y = to_one_hot(labels, len(self.net.rbm_layers[-1]))
+        y = to_one_hot(labels, self.net.rbm_layers[-1].W.shape[1])
         for ep in range(nb_epoch):
             ep_loss = 0
             indexes = np.array(range(n))
@@ -54,9 +55,9 @@ class DNN():
                 loss = bce_loss(batch_y, y_pred)
                 dA = 0 # define dA but not use it yet
                 # other layers
-                for iLayer in range(layer_count-2, -1, -1):
+                for iLayer in range(layer_count-1, -1, -1):
                     x = sorties[iLayer]
-                    curr_layer = self.net.rbm_layers[curr_layer]
+                    curr_layer = self.net.rbm_layers[iLayer]
                     if iLayer == layer_count - 1: # softmax
                         dZ = y_pred - batch_y
                     else: # sigmoid(-entree@W - b)
@@ -64,18 +65,18 @@ class DNN():
                     dW = 1/l * x.T @ dZ
                     db = 1/l * np.sum(dZ, axis=0)
                     dA = dZ @ curr_layer.W.T
-                    
+
                     # gradients
                     curr_layer.b -= lr * db
                     curr_layer.W -= lr * dW
 
                 ep_loss += np.sum(loss)
 
-            if verbose:
-                print(ep_loss)
+            if verbose_interval and ep % verbose_interval == 0:
+                print("Loss at episode %s: %f" % (ep, ep_loss))
 
     def test(self, X, y):
         _, y_pred_softmax = self.entree_sortie_reseau(X)
         y_pred = get_predictions(y_pred_softmax)
         taux_erreur = np.sum(y_pred != y) / y_pred.shape[0]
-        return taux_erreur.item()
+        print("Taux d'erreur :", taux_erreur.item())
