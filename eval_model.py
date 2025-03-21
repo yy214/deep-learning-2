@@ -1,6 +1,6 @@
 from model import Model
 from rbm import RBM
-from principal_DBN_alpha import DBN
+from dbn import DBN
 from utils import afficher_image
 from typing import Callable
 import numpy as np
