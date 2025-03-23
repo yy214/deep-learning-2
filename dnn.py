@@ -4,7 +4,8 @@ from dbn import DBN
 import numpy as np
 
 def calcul_softmax(rbm:RBM, entree):
-    sortie = rbm.entree_sortie(entree)
+    # sortie = rbm.entree_sortie(entree)
+    sortie = entree@rbm.W + rbm.b
     exp_sortie = np.exp(sortie - np.max(sortie, axis=1, keepdims=True))
     return exp_sortie / np.sum(exp_sortie, axis=1, keepdims=True)
 
@@ -34,15 +35,20 @@ class DNN():
 
     def entree_sortie_reseau(self, X):
         sorties = [X]
-        for layer in self.net.rbm_layers:
-            sorties.append(layer.entree_sortie(sorties[-1]))
-        return sorties, calcul_softmax(self.net.rbm_layers[-1], sorties[-2])
+        for iLayer in range(len(self.net.rbm_layers)-1):
+            layer = self.net.rbm_layers[iLayer]
+            sorties.append(layer.entree_sortie(sorties[iLayer]))
+        last_layer = self.net.rbm_layers[-1]
+        sorties.append(sorties[-1]@last_layer.W + last_layer.b)
+        return sorties, calcul_softmax(last_layer, sorties[-2])
     
-    def retropropagation(self, X, labels, nb_epoch, batch_size, lr, verbose_interval = 10):
+    def retropropagation(self, X, labels, nb_epoch, batch_size, lr, verbose_interval = 10, debug=False):
         n = X.shape[0]
         layer_count = len(self.net.rbm_layers)  # note that the last layer is the prediction layer
         y = to_one_hot(labels, self.net.rbm_layers[-1].W.shape[1])
+        prev_loss = 1e10
         for ep in range(nb_epoch):
+            # print(f"=========ep {ep}========")
             ep_loss = 0
             indexes = np.array(range(n))
             np.random.shuffle(indexes)
@@ -54,6 +60,11 @@ class DNN():
                 sorties, y_pred = self.entree_sortie_reseau(batch_X)
                 loss = bce_loss(batch_y, y_pred)
                 dA = 0 # define dA but not use it yet
+
+                if debug:
+                    print("prediction",y_pred[:2,:])
+                    print("GT",batch_y[:2,:])
+
                 # other layers
                 for iLayer in range(layer_count-1, -1, -1):
                     x = sorties[iLayer]
@@ -65,15 +76,26 @@ class DNN():
                     dW = 1/l * x.T @ dZ
                     db = 1/l * np.sum(dZ, axis=0)
                     dA = dZ @ curr_layer.W.T
+                    
+                    # print(dZ, dW, db, dA)
 
                     # gradients
                     curr_layer.b -= lr * db
                     curr_layer.W -= lr * dW
 
+                    if debug and ep in [0,1] and iLayer == layer_count-2: # just debug
+                        print("dloss/dZ", dZ)
+                        print("b",curr_layer.b)
+                        print("dloss/db", db)
+
                 ep_loss += np.sum(loss)
 
-            if verbose_interval and ep % verbose_interval == 0:
-                print("Loss at episode %s: %f" % (ep, ep_loss))
+            # if abs(ep_loss - prev_loss) < 1e-10: 
+                # print(f"same at ep {ep}")
+                # print(batch_y, y_pred)
+            prev_loss = ep_loss
+            if verbose_interval and (ep+1) % verbose_interval == 0:
+                print("Loss at episode %s: %f" % (ep+1, ep_loss))
 
     def test(self, X, y):
         _, y_pred_softmax = self.entree_sortie_reseau(X)

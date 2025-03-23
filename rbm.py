@@ -6,8 +6,8 @@ def sigmoid(x):
 
 class RBM(Model):
     def __init__(self, p, q):
-        self.a = np.zeros(p)
-        self.b = np.zeros(q)
+        self.a = np.random.normal(0, 0.01, p)
+        self.b = np.random.normal(0, 0.01, q)
         self.W = np.random.normal(0, 0.01, (p, q))
     
     def entree_sortie(self, X):
