@@ -5,8 +5,8 @@ import numpy as np
 
 def calcul_softmax(rbm:RBM, entree):
     sortie = rbm.entree_sortie(entree)
-    exp_sortie = np.exp(sortie)
-    return exp_sortie / np.sum(exp_sortie)
+    exp_sortie = np.exp(sortie - np.max(sortie, axis=1, keepdims=True))
+    return exp_sortie / np.sum(exp_sortie, axis=1, keepdims=True)
 
 def to_one_hot(arr, class_count):
     n = len(arr)
